@@ -2,14 +2,20 @@
   "name": "flowix",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "next dev",
+    "dev:local": "node -e \"const v=process.versions.node.split('.').map(Number); if (v[0]<20 || (v[0]===20 && v[1]<9)) { console.error('Node >=20.9.0 required'); process.exit(1);}\" && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
     "@base-ui/react": "^1.0.0",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/supabase-js": "^2.49.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",

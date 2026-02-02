@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flowix</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="brand">Flowix</div>
+        <div id="current-url" class="current-url">—</div>
+        <div class="status">
+          <span id="status-indicator" class="indicator"></span>
+          <span id="status-text">IDLE</span>
+        </div>
+        <div id="timer" class="timer">00:00</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Mode</div>
+        <div class="mode-toggle">
+          <button id="mode-auto" class="chip">Auto</button>
+          <button id="mode-manual" class="chip">Manual</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Stats</div>
+        <div class="stats">
+          <div class="stat">
+            <div class="label">Screenshots</div>
+            <div id="stat-screenshots" class="value">0</div>
+          </div>
+          <div class="stat">
+            <div class="label">Clicks</div>
+            <div id="stat-clicks" class="value">0</div>
+          </div>
+          <div class="stat">
+            <div class="label">Snapshots</div>
+            <div id="stat-snapshots" class="value">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Shortcuts</div>
+        <div class="shortcut-row">
+          <div class="label">Snapshot</div>
+          <div class="value">Alt+S</div>
+        </div>
+        <div class="shortcut-row">
+          <div class="label">Toggle recording</div>
+          <div id="shortcut-toggle" class="value">Not set</div>
+        </div>
+        <div class="shortcut-row">
+          <div class="label">Export</div>
+          <div id="shortcut-export" class="value">Not set</div>
+        </div>
+      </div>
+
+      <div class="section actions">
+        <button id="btn-primary" class="btn primary">Start</button>
+        <button id="btn-snapshot" class="btn secondary">Snapshot</button>
+        <button id="btn-export" class="btn secondary">Export</button>
+        <button id="btn-sync" class="btn secondary">Sync</button>
+        <button id="btn-open" class="btn link">Open Editor</button>
+        <div id="sync-status" class="sync-status"></div>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

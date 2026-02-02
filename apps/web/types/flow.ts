@@ -2,6 +2,12 @@ export type Flow = {
   id: string;
   createdAt: number;
   steps: Step[];
+  recording?: boolean;
+  startedAt?: number;
+  counts?: {
+    clicks: number;
+    snapshots: number;
+  };
 };
 
 export type StepType = "click" | "input" | "state_snapshot";

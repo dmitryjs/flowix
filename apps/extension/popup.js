@@ -2,11 +2,10 @@ const statusIndicator = document.getElementById("status-indicator");
 const statusText = document.getElementById("status-text");
 const timerEl = document.getElementById("timer");
 const currentUrlEl = document.getElementById("current-url");
-const statScreenshots = document.getElementById("stat-screenshots");
 const statClicks = document.getElementById("stat-clicks");
 const statSnapshots = document.getElementById("stat-snapshots");
-const shortcutToggle = document.getElementById("shortcut-toggle");
-const shortcutExport = document.getElementById("shortcut-export");
+const statusPill = document.getElementById("status-pill");
+const feedbackEl = document.getElementById("feedback");
 const btnPrimary = document.getElementById("btn-primary");
 const btnSnapshot = document.getElementById("btn-snapshot");
 const btnExport = document.getElementById("btn-export");
@@ -17,6 +16,8 @@ const modeManual = document.getElementById("mode-manual");
 const syncStatus = document.getElementById("sync-status");
 
 let currentStatus = null;
+let feedbackTimer = null;
+let syncTimer = null;
 
 function formatTimer(startedAt) {
   if (!startedAt) return "00:00";
@@ -31,11 +32,11 @@ function updateUI(status) {
   currentStatus = status;
   const recording = Boolean(status?.recording);
   const counts = status?.counts || { clicks: 0, snapshots: 0 };
-  const shortcuts = status?.shortcuts || {};
   const currentUrl = status?.currentUrl || null;
 
-  statusText.textContent = recording ? "REC" : "IDLE";
+  statusText.textContent = recording ? "Recording" : "Idle";
   statusIndicator.classList.toggle("rec", recording);
+  statusPill.classList.toggle("recording", recording);
   timerEl.textContent = recording ? formatTimer(status?.startedAt) : "00:00";
 
   if (currentUrl && typeof currentUrl === "string") {
@@ -52,20 +53,45 @@ function updateUI(status) {
     currentUrlEl.textContent = "—";
   }
 
-  statScreenshots.textContent = counts.snapshots || 0;
   statClicks.textContent = counts.clicks || 0;
   statSnapshots.textContent = counts.snapshots || 0;
-
-  const toggleShortcut = shortcuts["toggle-recording"];
-  const exportShortcut = shortcuts["export-session"];
-  shortcutToggle.textContent = toggleShortcut || "Not set";
-  shortcutExport.textContent = exportShortcut || "Not set";
 
   btnPrimary.textContent = recording ? "Stop" : "Start";
 
   const mode = status?.mode || "auto";
   modeAuto.classList.toggle("active", mode === "auto");
   modeManual.classList.toggle("active", mode === "manual");
+}
+
+function setFeedback(message, type = "info") {
+  if (!feedbackEl) return;
+  feedbackEl.textContent = message;
+  feedbackEl.dataset.state = type;
+  if (feedbackTimer) clearTimeout(feedbackTimer);
+  feedbackTimer = setTimeout(() => {
+    feedbackEl.textContent = "";
+    feedbackEl.dataset.state = "idle";
+  }, 1600);
+}
+
+function setSyncState(state, message) {
+  if (!syncStatus || !btnSync) return;
+  syncStatus.textContent = message || "";
+  syncStatus.dataset.state = state;
+  btnSync.dataset.state = state;
+  if (state === "syncing") {
+    btnSync.textContent = "Syncing...";
+  } else {
+    btnSync.textContent = "Sync";
+  }
+  if (syncTimer) clearTimeout(syncTimer);
+  if (state === "success" || state === "error") {
+    syncTimer = setTimeout(() => {
+      syncStatus.textContent = "";
+      syncStatus.dataset.state = "idle";
+      btnSync.dataset.state = "idle";
+    }, 2000);
+  }
 }
 
 function getStatus() {
@@ -83,6 +109,7 @@ btnPrimary.addEventListener("click", () => {
 
 btnSnapshot.addEventListener("click", () => {
   chrome.runtime.sendMessage({ type: "SNAPSHOT" });
+  setFeedback("Snapshot saved", "success");
 });
 
 btnExport.addEventListener("click", () => {
@@ -90,16 +117,16 @@ btnExport.addEventListener("click", () => {
 });
 
 btnSync.addEventListener("click", () => {
-  if (syncStatus) syncStatus.textContent = "Syncing...";
+  setSyncState("syncing", "Syncing...");
   chrome.runtime.sendMessage({ type: "SYNC" }, (response) => {
     if (chrome.runtime.lastError) {
-      if (syncStatus) syncStatus.textContent = "Sync failed";
+      setSyncState("error", "Sync failed");
       return;
     }
     if (response?.ok) {
-      if (syncStatus) syncStatus.textContent = `Synced: ${response.flowId || "-"}`;
+      setSyncState("success", "Flow synced");
     } else {
-      if (syncStatus) syncStatus.textContent = response?.error || "Sync failed";
+      setSyncState("error", response?.error || "Sync failed");
     }
   });
 });

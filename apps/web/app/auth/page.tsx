@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
+  const [otpCode, setOtpCode] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -16,13 +17,20 @@ export default function AuthPage() {
   useEffect(() => {
     const readSession = async () => {
       const { data } = await supabaseBrowser.auth.getSession();
-      setSessionEmail(data.session?.user.email ?? null);
+      const email = data.session?.user.email ?? null;
+      setSessionEmail(email);
+      if (email) {
+        window.location.href = "/";
+      }
     };
     readSession();
 
     const { data: listener } = supabaseBrowser.auth.onAuthStateChange(
       (_event, session) => {
         setSessionEmail(session?.user.email ?? null);
+        if (session?.user?.email) {
+          window.location.href = "/";
+        }
       }
     );
 
@@ -49,7 +57,39 @@ export default function AuthPage() {
     if (authError) {
       setError(authError.message);
     } else {
-      setStatus("Check your email for the magic link");
+      setStatus("Enter the 6-digit code from your email.");
+    }
+
+    setIsLoading(false);
+  };
+
+  const handleVerifyOtp = async () => {
+    setError(null);
+    setStatus(null);
+
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setError("Email is required");
+      return;
+    }
+    const code = otpCode.trim();
+    if (!code) {
+      setError("Code is required");
+      return;
+    }
+
+    setIsLoading(true);
+    const { error: verifyError } = await supabaseBrowser.auth.verifyOtp({
+      email: trimmedEmail,
+      token: code,
+      type: "email",
+    });
+
+    if (verifyError) {
+      setError(verifyError.message);
+    } else {
+      setStatus("Signed in. Redirecting...");
+      window.location.href = "/";
     }
 
     setIsLoading(false);
@@ -64,8 +104,10 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <Card className="w-full max-w-md">
-        <CardHeader>
+        <CardHeader className="space-y-1">
+          <div className="text-sm font-medium text-muted-foreground">Flowix</div>
           <CardTitle>Sign in</CardTitle>
+          <div className="text-xs text-muted-foreground">Project: Default</div>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input
@@ -74,8 +116,17 @@ export default function AuthPage() {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
           />
+          <Input
+            type="text"
+            placeholder="6-digit code"
+            value={otpCode}
+            onChange={(event) => setOtpCode(event.target.value)}
+          />
           <Button onClick={handleSendMagicLink} disabled={isLoading}>
-            {isLoading ? "Sending..." : "Send magic link"}
+            {isLoading ? "Sending..." : "Send code"}
+          </Button>
+          <Button variant="secondary" onClick={handleVerifyOtp} disabled={isLoading}>
+            {isLoading ? "Verifying..." : "Verify code"}
           </Button>
 
           {sessionEmail && (

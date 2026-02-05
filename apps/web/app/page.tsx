@@ -3,8 +3,10 @@ import { createSupabaseServerClient } from "@/src/lib/supabase/server-client";
 import DashboardClient from "@/app/_components/DashboardClient";
 import type { FlowSummary } from "@/app/_components/types";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data } = await supabase.auth.getSession();
   if (!data.session) {
     redirect("/auth");

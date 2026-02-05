@@ -8,7 +8,7 @@ type PageProps = {
 };
 
 export default async function FlowEditorPage({ params }: PageProps) {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data } = await supabase.auth.getSession();
   if (!data.session) {
     redirect("/auth");

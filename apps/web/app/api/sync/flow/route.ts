@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
 import { buildScreens } from "@/src/lib/flow/screens";
 import type { Flow } from "@/types/flow";
+import { createSupabaseServerClient } from "@/src/lib/supabase/server-client";
 
 function dataUrlToBytes(dataUrl: string): { bytes: Uint8Array; contentType: string } | null {
   if (!dataUrl.startsWith("data:")) return null;
@@ -16,7 +15,7 @@ function dataUrlToBytes(dataUrl: string): { bytes: Uint8Array; contentType: stri
 }
 
 export async function POST(request: Request) {
-  const supabase = createRouteHandlerClient({ cookies });
+  const supabase = await createSupabaseServerClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
